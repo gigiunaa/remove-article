@@ -1,20 +1,29 @@
+from flask import Flask, send_file
 from bs4 import BeautifulSoup
 
-input_file = "input.html"
-output_file = "output.html"
+app = Flask(__name__)
 
-# HTML ფაილის წაკითხვა
-with open(input_file, "r", encoding="utf-8") as f:
-    html = f.read()
+INPUT_FILE = "input.html"
+OUTPUT_FILE = "output.html"
 
-soup = BeautifulSoup(html, "html.parser")
+@app.route("/")
+def clean_article():
+    # HTML-ის წაკითხვა
+    with open(INPUT_FILE, "r", encoding="utf-8") as f:
+        html = f.read()
 
-# ყველა <article> ტეგის შიგთავსის დატოვება, <article> მოხსნით
-for article in soup.find_all("article"):
-    article.replace_with(*article.contents)
+    soup = BeautifulSoup(html, "html.parser")
 
-# შეცვლილი HTML-ის შენახვა
-with open(output_file, "w", encoding="utf-8") as f:
-    f.write(str(soup))
+    # ყველა <article> ტეგის შიგთავსის დატოვება, <article> მოხსნით
+    for article in soup.find_all("article"):
+        article.replace_with(*article.contents)
 
-print(f"<article> tag removed. Clean HTML saved to '{output_file}'")
+    # შენახვა
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        f.write(str(soup))
+
+    # HTML-ის დაბრუნება ბრაუზერში
+    return send_file(OUTPUT_FILE)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
